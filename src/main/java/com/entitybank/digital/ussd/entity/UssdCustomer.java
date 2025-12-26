@@ -16,6 +16,10 @@ public class UssdCustomer {
     private int pinRetries;
     private String locked;
 
+    private String PinPlain;
+
+    private String firstName;
+
     public String getMsisdn() {
         return msisdn;
     }
@@ -46,6 +50,22 @@ public class UssdCustomer {
 
     public void setLocked(String locked) {
         this.locked = locked;
+    }
+
+    public String getPinPlain() {
+        return PinPlain;
+    }
+
+    public void setPinPlain(String pinPlain) {
+        PinPlain = pinPlain;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 }
 

@@ -5,6 +5,7 @@ import com.entitybank.digital.ussd.entity.UssdSession;
 import com.entitybank.digital.ussd.model.ActionResult;
 import com.entitybank.digital.ussd.model.UssdContext;
 import com.entitybank.digital.ussd.repository.UssdMenuRepository;
+import com.entitybank.digital.ussd.util.MenuTextResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,109 +18,154 @@ public class UssdFlowService {
     @Autowired
     private MenuActionRegistry registry;
 
+    @Autowired
+    private MenuTextResolver resolver;
+
     public ActionResult process(UssdSession session, String input, UssdContext ctx) {
 
         UssdMenu menu = menuRepo.findByMenuCode(session.getCurrentMenu())
                 .orElseThrow(() -> new RuntimeException("Menu not found"));
 
-        // Auth guard
+        /* ===========================
+         * AUTH GUARD
+         * =========================== */
         if ("Y".equals(menu.getRequiresAuth()) && !session.isAuthenticated()) {
+
             session.setCurrentMenu("WELCOME");
+
+            String welcomeText = menuRepo.findByMenuCode("WELCOME")
+                    .map(UssdMenu::getMenuText)
+                    .orElse("Welcome");
+
             return new ActionResult(
-                    menuRepo.findByMenuCode("WELCOME")
-                            .map(UssdMenu::getMenuText)
-                            .orElse("Welcome"),
+                    resolver.resolve(welcomeText, session.getMsisdn()),
                     false,
                     "WELCOME"
             );
         }
 
-        // ✅ SAFE INPUT VALIDATION (STEP 3)
+        /* ===========================
+         * INPUT VALIDATION
+         * =========================== */
         try {
             InputValidator.validate(menu, input);
         } catch (InputValidationException e) {
-            // Stay on same menu and show friendly error
             return new ActionResult(
-                    e.getMessage() + "\n" + menu.getMenuText(),
+                    e.getMessage() + "\n" +
+                            resolver.resolve(menu.getMenuText(), session.getMsisdn()),
                     false,
                     menu.getMenuCode()
             );
         }
 
-        // Store free-text input generically
+        /* ===========================
+         * STORE FREE-TEXT INPUT
+         * =========================== */
         if (input != null && menu.getStoreKey() != null) {
             session.put(menu.getStoreKey(), input);
         }
 
-        // ACTION MENU
+        /* ===========================
+         * ACTION MENU
+         * =========================== */
         if (menu.getActionBean() != null) {
+
             MenuAction action = registry.get(menu.getActionBean());
             ActionResult result = action.execute(ctx, input);
+
             session.setCurrentMenu(result.getNextMenu());
-            return enrich(result);
+            return enrich(result, session);
         }
 
-        // First load
+        /* ===========================
+         * FIRST LOAD (NO INPUT)
+         * =========================== */
         if (input == null) {
-            return new ActionResult(menu.getMenuText(), false, menu.getMenuCode());
+            return new ActionResult(
+                    resolver.resolve(menu.getMenuText(), session.getMsisdn()),
+                    false,
+                    menu.getMenuCode()
+            );
         }
 
-        // OPTION lookup
+        /* ===========================
+         * OPTION LOOKUP
+         * =========================== */
         return menuRepo
                 .findByParentMenuAndOptionValue(menu.getMenuCode(), input)
                 .map(next -> {
+
                     session.setCurrentMenu(next.getMenuCode());
 
                     if (next.getActionBean() != null) {
                         MenuAction action = registry.get(next.getActionBean());
                         ActionResult result = action.execute(ctx, input);
+
                         session.setCurrentMenu(result.getNextMenu());
-                        return enrich(result);
+                        return enrich(result, session);
                     }
 
                     return new ActionResult(
-                            next.getMenuText(),
+                            resolver.resolve(next.getMenuText(), session.getMsisdn()),
                             "Y".equals(next.getIsTerminal()),
                             next.getMenuCode()
                     );
                 })
-                // ✅ FREE TEXT FALLBACK (AUTO-EXECUTE ACTION)
+
+                /* ===========================
+                 * FREE TEXT FALLBACK
+                 * =========================== */
                 .orElseGet(() -> {
 
                     if (menu.getNextMenu() == null) {
-                        throw new RuntimeException("Next menu not defined for " + menu.getMenuCode());
+                        throw new RuntimeException(
+                                "Next menu not defined for " + menu.getMenuCode());
                     }
 
                     UssdMenu next = menuRepo.findByMenuCode(menu.getNextMenu())
-                            .orElseThrow(() -> new RuntimeException(
-                                    "Next menu not found: " + menu.getNextMenu()));
+                            .orElseThrow(() ->
+                                    new RuntimeException("Next menu not found: " + menu.getNextMenu()));
 
                     session.setCurrentMenu(next.getMenuCode());
 
                     if (next.getActionBean() != null) {
                         MenuAction action = registry.get(next.getActionBean());
                         ActionResult result = action.execute(ctx, input);
+
                         session.setCurrentMenu(result.getNextMenu());
-                        return enrich(result);
+                        return enrich(result, session);
                     }
 
                     return new ActionResult(
-                            next.getMenuText(),
+                            resolver.resolve(next.getMenuText(), session.getMsisdn()),
                             "Y".equals(next.getIsTerminal()),
                             next.getMenuCode()
                     );
                 });
     }
 
-    private ActionResult enrich(ActionResult result) {
+    /* ===========================
+     * ENRICH ACTION RESULT
+     * =========================== */
+    private ActionResult enrich(ActionResult result, UssdSession session) {
+
+        // Action already produced text → still resolve placeholders
         if (result.getMessage() != null) {
-            return result;
+            return new ActionResult(
+                    resolver.resolve(result.getMessage(), session.getMsisdn()),
+                    result.isEndSession(),
+                    result.getNextMenu()
+            );
         }
 
         String msg = menuRepo.findByMenuCode(result.getNextMenu())
                 .map(UssdMenu::getMenuText)
                 .orElse("");
 
-        return new ActionResult(msg, result.isEndSession(), result.getNextMenu());
+        return new ActionResult(
+                resolver.resolve(msg, session.getMsisdn()),
+                result.isEndSession(),
+                result.getNextMenu()
+        );
     }
 }

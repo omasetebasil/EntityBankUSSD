@@ -16,20 +16,37 @@ public class AuthService {
             PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
     public boolean validatePin(String msisdn, String pin) {
+
         UssdCustomer c = repo.findById(msisdn)
                 .orElseThrow(() -> new RuntimeException("Customer not found: " + msisdn));
+
         if ("Y".equals(c.getLocked())) return false;
 
-        if (encoder.matches(pin, c.getPinHash())) {
+        /*
+         * 🔐 PRODUCTION LOGIC (DISABLED FOR NOW)
+         *
+         * if (encoder.matches(pin, c.getPinHash())) {
+         *     c.setPinRetries(0);
+         *     repo.save(c);
+         *     return true;
+         * }
+         */
+
+        // ✅ TEMP / DEV LOGIC — plain PIN comparison
+        if (pin.equals(c.getPinPlain())) {
             c.setPinRetries(0);
             repo.save(c);
             return true;
         }
 
         c.setPinRetries(c.getPinRetries() + 1);
-        if (c.getPinRetries() >= 3) c.setLocked("Y");
+        if (c.getPinRetries() >= 3) {
+            c.setLocked("Y");
+        }
+
         repo.save(c);
         return false;
     }
+
 }
 

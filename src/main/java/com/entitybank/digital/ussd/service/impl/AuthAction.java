@@ -28,7 +28,7 @@ public class AuthAction implements MenuAction {
         }
 
         boolean valid = authService.validatePin(ctx.getMsisdn(), input);
-        valid=true;
+       // valid=true;
         if (valid) {
             ctx.getSession().setAuthenticated(true);
             ctx.getSession().setLoginTime(System.currentTimeMillis());
