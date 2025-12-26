@@ -174,15 +174,12 @@ Main Menu
 
 1. Balance
 2. Send Money
-3. Change PIN
 0. Exit
 
 
 Balance → BalanceAction → Returns mocked balance
 
 Send Money → TransferAction → Enter recipient, amount → Success message
-
-Change PIN → PinChangeAction → Enter old PIN → Enter new PIN → Success
 
 Exit → ExitAction → Session cleanup
 
