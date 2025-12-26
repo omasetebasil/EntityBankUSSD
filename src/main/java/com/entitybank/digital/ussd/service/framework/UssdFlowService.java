@@ -20,10 +20,9 @@ public class UssdFlowService {
     public ActionResult process(UssdSession session, String input, UssdContext ctx) {
 
         UssdMenu menu = menuRepo.findByMenuCode(session.getCurrentMenu())
-                .orElseThrow(() ->
-                        new RuntimeException("Menu not found: " + session.getCurrentMenu()));
+                .orElseThrow(() -> new RuntimeException("Menu not found"));
 
-        // 🔐 Auth guard
+        // Auth guard
         if ("Y".equals(menu.getRequiresAuth()) && !session.isAuthenticated()) {
             session.setCurrentMenu("WELCOME");
             return new ActionResult(
@@ -35,110 +34,92 @@ public class UssdFlowService {
             );
         }
 
-        // 📝 Persist free-text input
-        if (input != null) {
-            if ("SEND_MONEY".equals(menu.getMenuCode())) {
-                session.setRecipient(input);
-            } else if ("SEND_AMOUNT".equals(menu.getMenuCode())) {
-                session.setAmount(input);
-            }
+        // ✅ SAFE INPUT VALIDATION (STEP 3)
+        try {
+            InputValidator.validate(menu, input);
+        } catch (InputValidationException e) {
+            // Stay on same menu and show friendly error
+            return new ActionResult(
+                    e.getMessage() + "\n" + menu.getMenuText(),
+                    false,
+                    menu.getMenuCode()
+            );
         }
 
-        // 🧠 ACTION MENU (current menu has action)
+        // Store free-text input generically
+        if (input != null && menu.getStoreKey() != null) {
+            session.put(menu.getStoreKey(), input);
+        }
+
+        // ACTION MENU
         if (menu.getActionBean() != null) {
             MenuAction action = registry.get(menu.getActionBean());
             ActionResult result = action.execute(ctx, input);
-
             session.setCurrentMenu(result.getNextMenu());
-
-            String message = result.getMessage();
-            if (message == null) {
-                message = menuRepo.findByMenuCode(result.getNextMenu())
-                        .map(UssdMenu::getMenuText)
-                        .orElse("");
-            }
-
-            return new ActionResult(message, result.isEndSession(), result.getNextMenu());
+            return enrich(result);
         }
 
-        // 📌 First load
+        // First load
         if (input == null) {
             return new ActionResult(menu.getMenuText(), false, menu.getMenuCode());
         }
 
-        // 🔹 OPTION MENU
+        // OPTION lookup
         return menuRepo
                 .findByParentMenuAndOptionValue(menu.getMenuCode(), input)
                 .map(next -> {
-
                     session.setCurrentMenu(next.getMenuCode());
 
-                    // 🔥 If next menu has action, EXECUTE IT IMMEDIATELY
                     if (next.getActionBean() != null) {
                         MenuAction action = registry.get(next.getActionBean());
                         ActionResult result = action.execute(ctx, input);
-
                         session.setCurrentMenu(result.getNextMenu());
-
-                        String message = result.getMessage();
-                        if (message == null) {
-                            message = menuRepo.findByMenuCode(result.getNextMenu())
-                                    .map(UssdMenu::getMenuText)
-                                    .orElse("");
-                        }
-
-                        return new ActionResult(
-                                message,
-                                result.isEndSession(),
-                                result.getNextMenu()
-                        );
+                        return enrich(result);
                     }
 
-                    boolean end = "Y".equals(next.getIsTerminal());
-                    return new ActionResult(next.getMenuText(), end, next.getMenuCode());
+                    return new ActionResult(
+                            next.getMenuText(),
+                            "Y".equals(next.getIsTerminal()),
+                            next.getMenuCode()
+                    );
                 })
-                // 🔹 FREE-TEXT FALLBACK (FIXED)
+                // ✅ FREE TEXT FALLBACK (AUTO-EXECUTE ACTION)
                 .orElseGet(() -> {
 
                     if (menu.getNextMenu() == null) {
-                        throw new RuntimeException(
-                                "Next menu not found: parent=" +
-                                        menu.getMenuCode() + ", input=" + input);
+                        throw new RuntimeException("Next menu not defined for " + menu.getMenuCode());
                     }
 
-                    UssdMenu nextMenu = menuRepo.findByMenuCode(menu.getNextMenu())
-                            .orElseThrow(() ->
-                                    new RuntimeException("Menu not found: " + menu.getNextMenu()));
+                    UssdMenu next = menuRepo.findByMenuCode(menu.getNextMenu())
+                            .orElseThrow(() -> new RuntimeException(
+                                    "Next menu not found: " + menu.getNextMenu()));
 
-                    session.setCurrentMenu(nextMenu.getMenuCode());
+                    session.setCurrentMenu(next.getMenuCode());
 
-                    // 🔥 EXECUTE ACTION IF PRESENT
-                    if (nextMenu.getActionBean() != null) {
-                        MenuAction action = registry.get(nextMenu.getActionBean());
+                    if (next.getActionBean() != null) {
+                        MenuAction action = registry.get(next.getActionBean());
                         ActionResult result = action.execute(ctx, input);
-
                         session.setCurrentMenu(result.getNextMenu());
-
-                        String message = result.getMessage();
-                        if (message == null) {
-                            message = menuRepo.findByMenuCode(result.getNextMenu())
-                                    .map(UssdMenu::getMenuText)
-                                    .orElse("");
-                        }
-
-                        return new ActionResult(
-                                message,
-                                result.isEndSession(),
-                                result.getNextMenu()
-                        );
+                        return enrich(result);
                     }
 
-                    // Otherwise just show menu text
                     return new ActionResult(
-                            nextMenu.getMenuText(),
-                            "Y".equals(nextMenu.getIsTerminal()),
-                            nextMenu.getMenuCode()
+                            next.getMenuText(),
+                            "Y".equals(next.getIsTerminal()),
+                            next.getMenuCode()
                     );
                 });
+    }
+
+    private ActionResult enrich(ActionResult result) {
+        if (result.getMessage() != null) {
+            return result;
+        }
+
+        String msg = menuRepo.findByMenuCode(result.getNextMenu())
+                .map(UssdMenu::getMenuText)
+                .orElse("");
+
+        return new ActionResult(msg, result.isEndSession(), result.getNextMenu());
     }
 }

@@ -13,8 +13,8 @@ public class SendMoneyConfirmAction implements MenuAction {
 
         String msg =
                 "Confirm transaction\n" +
-                        "Send KES " + ctx.getSession().getAmount() +
-                        " to " + ctx.getSession().getRecipient() +
+                        "Send KES " + ctx.getSession().get("amount") +
+                        " to " + ctx.getSession().get("recipient") +
                         "\n1. Confirm\n0. Cancel";
 
         // NEXT_MENU should be SEND_POST

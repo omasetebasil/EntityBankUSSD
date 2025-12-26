@@ -16,13 +16,13 @@ public class SendMoneyPostAction implements MenuAction {
     public ActionResult execute(UssdContext ctx, String input) {
 
         if (!"1".equals(input)) {
-            return new ActionResult("Transaction cancelled", true, "EXIT");
+            return new ActionResult("Transaction cancelled.Thank you for banking with Entity", true, "EXIT");
         }
 
         service.post(
                 ctx.getMsisdn(),
-                ctx.getSession().getRecipient(),
-                ctx.getSession().getAmount()
+                ctx.getSession().get("recipient"),
+                ctx.getSession().get("amount")
         );
 
         return new ActionResult("Transaction successful\n0. Exit", false, "SEND_SUCCESS");

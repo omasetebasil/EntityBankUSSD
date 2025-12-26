@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -15,10 +17,20 @@ public class UssdSession implements Serializable {
     private String msisdn;
     private String currentMenu;
     private boolean authenticated;
-    private Long loginTime; // epoch millis
 
-    private String recipient;
-    private String amount;
+    private Long loginTime; // epoch millis
+    private static final long serialVersionUID = 1L;
+
+
+    private Map<String, String> attributes = new HashMap<>();
+
+    public void put(String key, String value) {
+        attributes.put(key, value);
+    }
+
+    public String get(String key) {
+        return attributes.get(key);
+    }
 
 
     public String getSessionId() {
@@ -53,6 +65,14 @@ public class UssdSession implements Serializable {
         this.authenticated = authenticated;
     }
 
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
+
     public Long getLoginTime() {
         return loginTime;
     }
@@ -64,38 +84,6 @@ public class UssdSession implements Serializable {
     public UssdSession() {
     }
 
-    public String getRecipient() {
-        return recipient;
-    }
 
-    public void setRecipient(String recipient) {
-        this.recipient = recipient;
-    }
-
-    public String getAmount() {
-        return amount;
-    }
-
-    public void setAmount(String amount) {
-        this.amount = amount;
-    }
-
-    public UssdSession(String sessionId, String msisdn, String currentMenu, boolean authenticated, Long loginTime) {
-        this.sessionId = sessionId;
-        this.msisdn = msisdn;
-        this.currentMenu = currentMenu;
-        this.authenticated = authenticated;
-        this.loginTime = loginTime;
-    }
-
-    public UssdSession(String sessionId, String msisdn, String currentMenu, boolean authenticated, Long loginTime, String recipient, String amount) {
-        this.sessionId = sessionId;
-        this.msisdn = msisdn;
-        this.currentMenu = currentMenu;
-        this.authenticated = authenticated;
-        this.loginTime = loginTime;
-        this.recipient = recipient;
-        this.amount = amount;
-    }
 }
 

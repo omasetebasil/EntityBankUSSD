@@ -21,6 +21,10 @@ public class UssdMenu {
     private String requiresAuth;
     private String actionBean;
 
+    // NEW
+    private String inputType;
+    private String storeKey;
+
     public Long getId() {
         return id;
     }
@@ -91,6 +95,22 @@ public class UssdMenu {
 
     public void setActionBean(String actionBean) {
         this.actionBean = actionBean;
+    }
+
+    public String getInputType() {
+        return inputType;
+    }
+
+    public void setInputType(String inputType) {
+        this.inputType = inputType;
+    }
+
+    public String getStoreKey() {
+        return storeKey;
+    }
+
+    public void setStoreKey(String storeKey) {
+        this.storeKey = storeKey;
     }
 }
 
