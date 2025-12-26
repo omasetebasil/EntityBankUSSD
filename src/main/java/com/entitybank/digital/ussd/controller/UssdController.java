@@ -24,13 +24,20 @@ public class UssdController {
     public String ussd(
             @RequestParam String sessionId,
             @RequestParam String phoneNumber,
-            @RequestParam(required=false) String text) {
+            @RequestParam(required = false) String text) {
 
         UssdSession session = sessionService.getOrCreate(sessionId, phoneNumber);
+
+        // 🔁 Reset session on fresh dial (no input)
+        if (text == null || text.trim().isEmpty()) {
+            session.setAuthenticated(false);
+            session.setCurrentMenu("WELCOME");
+            session.setLoginTime(null);
+        }
+
         String input = null;
 
         if (text != null && !text.isEmpty()) {
-            // Remove trailing *
             String cleanedText = text.endsWith("*")
                     ? text.substring(0, text.length() - 1)
                     : text;
