@@ -15,7 +15,7 @@ public class UssdSession implements Serializable {
     private String msisdn;
     private String currentMenu;
     private boolean authenticated;
-    private Instant loginTime;
+    private Long loginTime; // epoch millis
 
 
     public String getSessionId() {
@@ -50,16 +50,18 @@ public class UssdSession implements Serializable {
         this.authenticated = authenticated;
     }
 
-    public Instant getLoginTime() {
+    public Long getLoginTime() {
         return loginTime;
     }
 
-    public void setLoginTime(Instant loginTime) {
+    public void setLoginTime(Long loginTime) {
         this.loginTime = loginTime;
     }
+
     public UssdSession() {
     }
-    public UssdSession(String sessionId, String msisdn, String currentMenu, boolean authenticated, Instant loginTime) {
+
+    public UssdSession(String sessionId, String msisdn, String currentMenu, boolean authenticated, Long loginTime) {
         this.sessionId = sessionId;
         this.msisdn = msisdn;
         this.currentMenu = currentMenu;

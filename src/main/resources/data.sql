@@ -1,6 +1,6 @@
 -- Sample USSD Menus
 INSERT INTO USSD_MENU VALUES
-(1, 'WELCOME', 'Good morning Basil, welcome to Entity Bank\nEnter PIN\n(Forgot PIN reply with 1)', NULL, NULL, NULL, 'N', 'N', NULL);
+(1, 'WELCOME', 'Good morning Basil, welcome to Entity Bank\nEnter PIN\n(Forgot PIN reply with 1)', NULL, NULL, 'MAIN', 'N', 'N', 'authAction');
 
 INSERT INTO USSD_MENU VALUES
 (2, 'MAIN', '1. Balance\n2. Send Money\n3. Change PIN\n0. Exit', 'WELCOME', NULL, NULL, 'N', 'Y', NULL);
