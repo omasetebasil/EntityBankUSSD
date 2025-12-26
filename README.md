@@ -29,6 +29,7 @@ It supports:
 - Java 8 or higher
 - Maven 3.x
 - Docker & Docker Compose
+- Download, install, and start a local Redis instance
 
 ---
 
