@@ -11,6 +11,7 @@ public class UssdContext {
     private String msisdn;
     private String sessionId;
 
+
     public UssdSession getSession() {
         return session;
     }
@@ -34,6 +35,7 @@ public class UssdContext {
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
+
 
     public UssdContext(UssdSession session, String msisdn, String sessionId) {
         this.session = session;

@@ -3,13 +3,7 @@ INSERT INTO USSD_MENU VALUES
 (1, 'WELCOME', 'Good morning Basil, welcome to Entity Bank\nEnter PIN\n(Forgot PIN reply with 1)', NULL, NULL, 'MAIN', 'N', 'N', 'authAction');
 
 INSERT INTO USSD_MENU VALUES
-(2, 'MAIN', '1. Balance\n2. Send Money\n3. Change PIN\n0. Exit', 'WELCOME', NULL, NULL, 'N', 'Y', NULL);
-
-INSERT INTO USSD_MENU VALUES
-(4, 'SEND_MONEY', 'Enter recipient number', 'MAIN', '2', NULL, 'N', 'Y', NULL);
-
-INSERT INTO USSD_MENU VALUES
-(5, 'PIN_CHANGE', 'Enter old PIN', 'MAIN', '3', NULL, 'N', 'Y', NULL);
+(2, 'MAIN', '1. Balance\n2. Send Money\n0. Exit', 'WELCOME', NULL, NULL, 'N', 'Y', NULL);
 
 
 -- Balance menu (with action)
@@ -17,17 +11,38 @@ INSERT INTO USSD_MENU VALUES
 (3, 'BAL', NULL, 'MAIN', '1', NULL, 'N', 'Y', 'balanceAction');
 
 
--- Balance action (executes balance check)
-INSERT INTO USSD_MENU VALUES
-(7, 'BAL_ACTION', NULL, 'BAL_LABEL', '1', NULL, 'N', 'Y', 'balanceAction');
-
--- Exit option from balance menu
-INSERT INTO USSD_MENU VALUES
-(8, 'BAL_EXIT', 'Thank you for banking with Entity', 'BAL_LABEL', '0', NULL, 'Y', 'N', 'exitAction');
-
 
 INSERT INTO USSD_MENU VALUES
 (6, 'EXIT', 'Thank you for banking with Entity', 'MAIN', '0', NULL, 'Y', 'N', 'exitAction');
+
+
+-- Step 1: Enter recipient
+INSERT INTO USSD_MENU VALUES
+(10, 'SEND_MONEY', 'Enter recipient number', 'MAIN', '2', 'SEND_AMOUNT', 'N', 'Y', NULL);
+
+-- Step 2: Enter amount
+INSERT INTO USSD_MENU VALUES
+(11, 'SEND_AMOUNT', 'Enter amount to send', 'SEND_MONEY', NULL, 'SEND_CONFIRM', 'N', 'Y', NULL);
+
+-- Step 3: Confirm details (action)
+INSERT INTO USSD_MENU VALUES
+(12, 'SEND_CONFIRM', NULL, 'SEND_AMOUNT', NULL, 'SEND_POST', 'N', 'Y', 'sendMoneyConfirmAction');
+
+-- Step 4: Post transaction
+INSERT INTO USSD_MENU VALUES
+(13, 'SEND_POST', NULL, 'SEND_CONFIRM', '1', 'SEND_SUCCESS', 'N', 'Y', 'sendMoneyPostAction');
+
+-- Cancel option
+INSERT INTO USSD_MENU VALUES
+(14, 'SEND_CANCEL', 'Transaction cancelled\n0. Exit', 'SEND_CONFIRM', '0', NULL, 'N', 'N', NULL);
+
+-- Step 5: Success
+INSERT INTO USSD_MENU VALUES
+(15, 'SEND_SUCCESS', 'Transaction successful\n0. Exit', 'SEND_POST', NULL, NULL, 'N', 'Y', NULL);
+
+INSERT INTO USSD_MENU VALUES
+(16, 'SEND_EXIT', 'Thank you for banking with Entity', 'SEND_SUCCESS', '0', NULL, 'Y', 'N', 'exitAction');
+
 
 -- Sample Customer
 INSERT INTO USSD_CUSTOMER VALUES
