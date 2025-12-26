@@ -19,8 +19,14 @@ public class AuthAction implements MenuAction {
     @Override
     public ActionResult execute(UssdContext ctx, String input) {
 
-        // First load → let flow render WELCOME menu text
+        // First load
         if (input == null) {
+
+            boolean exists = authService.customerExists(ctx.getMsisdn());
+            if (!exists) {
+                return new ActionResult(null, false, "NON_CUSTOMER");
+            }
+
             return new ActionResult(null, false, "WELCOME");
         }
 
@@ -30,20 +36,14 @@ public class AuthAction implements MenuAction {
             ctx.getSession().setAuthenticated(true);
             ctx.getSession().setLoginTime(System.currentTimeMillis());
 
-            String next = menuRepo.findByMenuCode("WELCOME")
-                    .map(m -> m.getNextMenu())
-                    .orElse("MAIN");
-
-            return new ActionResult(null, false, next);
+            return new ActionResult(null, false, "MAIN");
         }
 
-        /* ===========================
-         * ❌ INVALID PIN — EXPLICIT MESSAGE
-         * =========================== */
         return new ActionResult(
                 "Invalid PIN. Please try again.\nEnter PIN\n(Forgot PIN reply with 1)",
                 false,
                 "WELCOME"
         );
     }
+
 }

@@ -1,9 +1,9 @@
 -- Sample USSD Menus
 INSERT INTO USSD_MENU VALUES
-(1, 'WELCOME', 'Good {GREETING} {FIRST_NAME}, welcome to Entity Bank\nEnter PIN\n(Forgot PIN reply with 1)', NULL, NULL, 'MAIN', 'N', 'N', 'authAction','PIN',NULL);
+(1, 'WELCOME', 'Good {GREETING} {FIRST_NAME}, welcome to Entity Bank.Enter PIN\n(Forgot PIN reply with 1)', NULL, NULL, 'MAIN', 'N', 'N', 'authAction','PIN',NULL);
 
 INSERT INTO USSD_MENU VALUES
-(2, 'MAIN', '1. Balance\n2. Send Money\n0. Exit', 'WELCOME', NULL, NULL, 'N', 'Y', NULL,'OPTION',NULL);
+(2, 'MAIN', '\n1. Balance\n2. Send Money\n0. Exit', 'WELCOME', NULL, NULL, 'N', 'Y', NULL,'OPTION',NULL);
 
 
 -- Balance menu (with action)
@@ -39,6 +39,10 @@ INSERT INTO USSD_MENU VALUES
 INSERT INTO USSD_MENU VALUES
 (16, 'SEND_EXIT', 'Thank you for banking with Entity', 'SEND_SUCCESS', '0', NULL, 'Y', 'N', 'exitAction',NULL,NULL);
 
+INSERT INTO USSD_MENU VALUES
+(100, 'NON_CUSTOMER',
+ 'Welcome to Entity Bank.This number is not registered.\nPlease visit a branch to register.\n0. Exit',
+ NULL, NULL, NULL, 'Y', 'N', 'exitAction', NULL, NULL);
 
 -- Sample Customer
 INSERT INTO USSD_CUSTOMER VALUES

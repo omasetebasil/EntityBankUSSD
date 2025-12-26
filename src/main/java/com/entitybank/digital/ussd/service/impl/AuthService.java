@@ -47,6 +47,9 @@ public class AuthService {
         repo.save(c);
         return false;
     }
+    public boolean customerExists(String msisdn) {
+        return repo.existsById(msisdn);
+    }
 
 }
 

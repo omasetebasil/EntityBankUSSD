@@ -19,26 +19,28 @@ public class MenuTextResolver {
 
         String text = raw;
 
-        /* ===========================
-         * SERVER TIME GREETING
-         * =========================== */
+        // 1️⃣ Replace escaped newlines (\\n) with real newlines
+        text = text.replace("\\n", "\n");
+
+        // 2️⃣ Greeting
         text = text.replace("{GREETING}", GreetingUtil.greeting());
 
-        /* ===========================
-         * CUSTOMER FIRST NAME
-         * =========================== */
-        if (msisdn != null) {
-            Optional<UssdCustomer> customer =
-                    customerRepo.findById(msisdn);
+        // 3️⃣ First name
+        String firstName = "";
 
-            if (customer.isPresent() && customer.get().getFirstName() != null) {
-                text = text.replace(
-                        "{FIRST_NAME}",
-                        customer.get().getFirstName()
-                );
-            }
+        if (msisdn != null) {
+            firstName = customerRepo.findById(msisdn)
+                    .map(UssdCustomer::getFirstName)
+                    .orElse("");
         }
+
+        text = text.replace("{FIRST_NAME}", firstName);
+
+        // 4️⃣ Optional cleanup (recommended)
+        text = text.replaceAll("[ \t]+", " ").trim();
 
         return text;
     }
+
 }
+
