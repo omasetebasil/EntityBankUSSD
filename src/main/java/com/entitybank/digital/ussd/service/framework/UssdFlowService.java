@@ -36,13 +36,13 @@ public class UssdFlowService {
 
         // 🧠 Action-driven menu (PIN, balance, transfers, exit)
         if (menu.getActionBean() != null) {
-
             MenuAction action = registry.get(menu.getActionBean());
             ActionResult result = action.execute(ctx, input);
 
+            // Update session current menu based on action result
             session.setCurrentMenu(result.getNextMenu());
 
-            // Load next menu text FROM DB
+            // Load next menu text from DB if available
             String message = menuRepo.findByMenuCode(result.getNextMenu())
                     .map(UssdMenu::getMenuText)
                     .orElse(result.getMessage());
@@ -50,17 +50,34 @@ public class UssdFlowService {
             return new ActionResult(message, result.isEndSession(), result.getNextMenu());
         }
 
-        // 📋 Option-based navigation
+        // 📋 Option-based navigation (menus with numbered options)
         if (input == null) {
             return new ActionResult(menu.getMenuText(), false, menu.getMenuCode());
         }
 
+        // Find next menu based on parent menu + input option
         UssdMenu next = menuRepo
                 .findByParentMenuAndOptionValue(menu.getMenuCode(), input)
                 .orElseThrow(() -> new RuntimeException(
                         "Next menu not found: parent=" + menu.getMenuCode() + ", input=" + input));
 
+        // If the next menu has an action, execute it immediately
+        if (next.getActionBean() != null) {
+            MenuAction action = registry.get(next.getActionBean());
+            ActionResult result = action.execute(ctx, input);
+            session.setCurrentMenu(result.getNextMenu());
+
+            String message = menuRepo.findByMenuCode(result.getNextMenu())
+                    .map(UssdMenu::getMenuText)
+                    .orElse(result.getMessage());
+
+            return new ActionResult(message, result.isEndSession(), result.getNextMenu());
+        }
+
+        // Otherwise, show the menu text
         session.setCurrentMenu(next.getMenuCode());
-        return new ActionResult(next.getMenuText(), false, next.getMenuCode());
+        boolean endSession = "Y".equals(next.getIsTerminal());
+
+        return new ActionResult(next.getMenuText(), endSession, next.getMenuCode());
     }
 }

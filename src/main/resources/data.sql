@@ -6,13 +6,25 @@ INSERT INTO USSD_MENU VALUES
 (2, 'MAIN', '1. Balance\n2. Send Money\n3. Change PIN\n0. Exit', 'WELCOME', NULL, NULL, 'N', 'Y', NULL);
 
 INSERT INTO USSD_MENU VALUES
-(3, 'BAL', 'Checking your balance...', 'MAIN', '1', NULL, 'N', 'Y', 'balanceAction');
+(4, 'SEND_MONEY', 'Enter recipient number', 'MAIN', '2', NULL, 'N', 'Y', NULL);
 
 INSERT INTO USSD_MENU VALUES
-(4, 'SEND_MONEY', 'Enter recipient number', 'MAIN', '2', NULL, 'N', 'Y', 'transferAction');
+(5, 'PIN_CHANGE', 'Enter old PIN', 'MAIN', '3', NULL, 'N', 'Y', NULL);
 
+
+-- Balance menu (with action)
 INSERT INTO USSD_MENU VALUES
-(5, 'PIN_CHANGE', 'Enter old PIN', 'MAIN', '3', NULL, 'N', 'Y', 'pinChangeAction');
+(3, 'BAL', NULL, 'MAIN', '1', NULL, 'N', 'Y', 'balanceAction');
+
+
+-- Balance action (executes balance check)
+INSERT INTO USSD_MENU VALUES
+(7, 'BAL_ACTION', NULL, 'BAL_LABEL', '1', NULL, 'N', 'Y', 'balanceAction');
+
+-- Exit option from balance menu
+INSERT INTO USSD_MENU VALUES
+(8, 'BAL_EXIT', 'Thank you for banking with Entity', 'BAL_LABEL', '0', NULL, 'Y', 'N', 'exitAction');
+
 
 INSERT INTO USSD_MENU VALUES
 (6, 'EXIT', 'Thank you for banking with Entity', 'MAIN', '0', NULL, 'Y', 'N', 'exitAction');
