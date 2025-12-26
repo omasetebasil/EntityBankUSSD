@@ -4,11 +4,11 @@
 It supports:
 
 - Menu-driven USSD flows loaded from the database
-- Redis-based session management with automatic TTL (5 minutes)
-- PIN login, PIN reset, PIN change
+- Redis-based session management with automatic TTL (10 minutes)
+- PIN login
 - Mock banking operations: balance check, money transfer
 - Exit flow with session cleanup
-- Integration-ready for telco aggregators (Africa’s Talking, Infobip, Huawei, etc.)
+- Integration-ready for telco aggregators (Safaricom,MTN,Africa’s Talking, Infobip, Huawei, etc.)
 
 ---
 
@@ -55,8 +55,6 @@ ussd-entity-bank/
 └── README.md
 
 Visit http://localhost:9000/swagger-ui.html to view the UI.
-
-OpenAPI JSON: http://localhost:9000/v3/api-docs.
 ---
 
 ## **Configuration**
@@ -170,12 +168,6 @@ Welcome / PIN Login
 User dials USSD
 
 Prompt: Enter PIN (Forgot PIN reply 1)
-
-Forgot PIN
-
-Select 1 at login
-
-Enter ID → Receive OTP → Reset PIN
 
 Main Menu
 
