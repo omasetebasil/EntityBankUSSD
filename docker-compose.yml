@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: ussd-postgres
+    environment:
+      POSTGRES_USER: ussd_user
+      POSTGRES_PASSWORD: ussd_pass
+      POSTGRES_DB: ussd_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ussd_postgres_data:/var/lib/postgresql/data
+    networks:
+      - ussd-network
+
+  redis:
+    image: redis:7
+    container_name: ussd-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ussd-network
+    command: ["redis-server", "--appendonly", "yes"]
+
+volumes:
+  ussd_postgres_data:
+
+networks:
+  ussd-network:
+    driver: bridge
