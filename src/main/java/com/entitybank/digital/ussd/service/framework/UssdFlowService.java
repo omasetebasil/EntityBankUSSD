@@ -59,19 +59,16 @@ public class UssdFlowService {
         }
 
         /* ===========================
-         * STORE FREE-TEXT INPUT
+         * STORE INPUT
          * =========================== */
         if (input != null && menu.getStoreKey() != null) {
             session.put(menu.getStoreKey(), input);
         }
 
         /* ===========================
-         * ACTION MENU
+         * ACTION EXECUTION
          * =========================== */
-        /* ===========================
-         * ACTION MENU (ONLY ON INPUT)
-         * =========================== */
-        if (menu.getActionBean() != null && input != null) {
+        if (menu.getActionBean() != null && shouldExecuteAction(menu, input)) {
 
             MenuAction action = registry.get(menu.getActionBean());
             ActionResult result = action.execute(ctx, input);
@@ -80,9 +77,8 @@ public class UssdFlowService {
             return enrich(result, session);
         }
 
-
         /* ===========================
-         * FIRST LOAD (NO INPUT)
+         * FIRST LOAD
          * =========================== */
         if (input == null) {
             return new ActionResult(
@@ -101,14 +97,15 @@ public class UssdFlowService {
 
                     session.setCurrentMenu(next.getMenuCode());
 
-                    if (next.getActionBean() != null && input != null) {
+                    if (next.getActionBean() != null &&
+                            shouldExecuteAction(next, input)) {
+
                         MenuAction action = registry.get(next.getActionBean());
                         ActionResult result = action.execute(ctx, input);
 
                         session.setCurrentMenu(result.getNextMenu());
                         return enrich(result, session);
                     }
-
 
                     return new ActionResult(
                             resolver.resolve(next.getMenuText(), session.getMsisdn()),
@@ -118,7 +115,7 @@ public class UssdFlowService {
                 })
 
                 /* ===========================
-                 * FREE TEXT FALLBACK
+                 * FREE TEXT FALLBACK (NAVIGATION)
                  * =========================== */
                 .orElseGet(() -> {
 
@@ -133,14 +130,16 @@ public class UssdFlowService {
 
                     session.setCurrentMenu(next.getMenuCode());
 
-                    if (next.getActionBean() != null && input != null) {
+                    // IMPORTANT: execute action ONLY if allowed
+                    if (next.getActionBean() != null &&
+                            shouldExecuteAction(next, null)) {
+
                         MenuAction action = registry.get(next.getActionBean());
-                        ActionResult result = action.execute(ctx, input);
+                        ActionResult result = action.execute(ctx, null);
 
                         session.setCurrentMenu(result.getNextMenu());
                         return enrich(result, session);
                     }
-
 
                     return new ActionResult(
                             resolver.resolve(next.getMenuText(), session.getMsisdn()),
@@ -151,11 +150,25 @@ public class UssdFlowService {
     }
 
     /* ===========================
-     * ENRICH ACTION RESULT
+     * ACTION EXECUTION RULE
+     * =========================== */
+    private boolean shouldExecuteAction(UssdMenu menu, String input) {
+
+        // Case 1: user provided input
+        if (input != null) {
+            return true;
+        }
+
+        // Case 2: display-only CONFIRM (Send Money)
+        return "CONFIRM".equals(menu.getInputType())
+                && menu.getStoreKey() == null;
+    }
+
+    /* ===========================
+     * ENRICH RESULT
      * =========================== */
     private ActionResult enrich(ActionResult result, UssdSession session) {
 
-        // Action already produced text → still resolve placeholders
         if (result.getMessage() != null) {
             return new ActionResult(
                     resolver.resolve(result.getMessage(), session.getMsisdn()),
