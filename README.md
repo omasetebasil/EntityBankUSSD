@@ -5,7 +5,7 @@ It supports:
 
 - Menu-driven USSD flows loaded from the database
 - Redis-based session management with automatic TTL (10 minutes)
-- PIN login
+- PIN login and reset
 - Mock banking operations: balance check, money transfer
 - Exit flow with session cleanup
 - Integration-ready for telco aggregators (Safaricom,MTN,Africa’s Talking, Infobip, Huawei, etc.)
