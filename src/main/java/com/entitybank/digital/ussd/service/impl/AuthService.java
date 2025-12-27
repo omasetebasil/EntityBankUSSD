@@ -50,6 +50,25 @@ public class AuthService {
     public boolean customerExists(String msisdn) {
         return repo.existsById(msisdn);
     }
+    public boolean validateSecretWord(String msisdn, String input) {
+
+        UssdCustomer c = repo.findById(msisdn)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        return input.equalsIgnoreCase(c.getSecretWord());
+    }
+
+    public void updatePin(String msisdn, String newPin) {
+
+        UssdCustomer c = repo.findById(msisdn)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        c.setPinPlain(newPin);
+        c.setPinRetries(0);
+        c.setLocked("N");
+
+        repo.save(c);
+    }
 
 }
 

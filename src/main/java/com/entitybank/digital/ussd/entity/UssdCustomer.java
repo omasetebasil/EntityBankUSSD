@@ -20,6 +20,8 @@ public class UssdCustomer {
 
     private String firstName;
 
+    private String secretWord;
+
     public String getMsisdn() {
         return msisdn;
     }
@@ -66,6 +68,13 @@ public class UssdCustomer {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+    public String getSecretWord() {
+        return secretWord;
+    }
+
+    public void setSecretWord(String secretWord) {
+        this.secretWord = secretWord;
     }
 }
 

@@ -30,12 +30,18 @@ public class AuthAction implements MenuAction {
             return new ActionResult(null, false, "WELCOME");
         }
 
+        /* ===========================
+         * 🔑 FORGOT PIN ENTRY
+         * =========================== */
+        if ("1".equals(input)) {
+            return new ActionResult(null, false, "RESET_SECRET");
+        }
+
         boolean valid = authService.validatePin(ctx.getMsisdn(), input);
 
         if (valid) {
             ctx.getSession().setAuthenticated(true);
             ctx.getSession().setLoginTime(System.currentTimeMillis());
-
             return new ActionResult(null, false, "MAIN");
         }
 
@@ -45,5 +51,7 @@ public class AuthAction implements MenuAction {
                 "WELCOME"
         );
     }
+
+
 
 }

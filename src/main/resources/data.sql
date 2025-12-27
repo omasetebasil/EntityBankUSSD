@@ -1,6 +1,6 @@
 -- Sample USSD Menus
 INSERT INTO USSD_MENU VALUES
-(1, 'WELCOME', 'Good {GREETING} {FIRST_NAME}, welcome to Entity Bank.Enter PIN\n(Forgot PIN reply with 1)', NULL, NULL, 'MAIN', 'N', 'N', 'authAction','PIN',NULL);
+(1, 'WELCOME', 'Good {GREETING} {FIRST_NAME}, welcome to Entity Bank.Enter PIN\n(Forgot PIN reply with 1)', NULL, NULL, 'MAIN', 'N', 'N', 'authAction','OPTION',NULL);
 
 INSERT INTO USSD_MENU VALUES
 (2, 'MAIN', '\n1. Balance\n2. Send Money\n0. Exit', 'WELCOME', NULL, NULL, 'N', 'Y', NULL,'OPTION',NULL);
@@ -44,7 +44,36 @@ INSERT INTO USSD_MENU VALUES
  'Welcome to Entity Bank.This number is not registered.\nPlease visit a branch to register.\n0. Exit',
  NULL, NULL, NULL, 'Y', 'N', 'exitAction', NULL, NULL);
 
+ -- Step 1: Enter secret word
+ INSERT INTO USSD_MENU VALUES
+ (200, 'RESET_SECRET',
+  'Enter your secret word',
+  'WELCOME', '1', 'RESET_NEW_PIN',
+  'N', 'N', 'resetSecretAction', 'TEXT', 'secret_word_input');
+
+ -- Step 2: Enter new PIN
+ INSERT INTO USSD_MENU VALUES
+ (201, 'RESET_NEW_PIN',
+  'Enter new 4-digit PIN',
+  'RESET_SECRET', NULL, 'RESET_CONFIRM_PIN',
+  'N', 'N', NULL, 'PIN', 'new_pin');
+
+ -- Step 3: Confirm new PIN
+ INSERT INTO USSD_MENU VALUES
+ (202, 'RESET_CONFIRM_PIN',
+  'Re-enter new PIN',
+  'RESET_NEW_PIN', NULL, NULL,
+  'N', 'N', 'resetConfirmPinAction', 'PIN', 'confirm_pin');
+
+ -- Step 4: Success
+ INSERT INTO USSD_MENU VALUES
+ (203, 'RESET_SUCCESS',
+  'PIN reset successful.\nPlease login with your new PIN.',
+  NULL, NULL, 'WELCOME',
+  'N', 'N', NULL, NULL, NULL);
+
+
 -- Sample Customer
 INSERT INTO USSD_CUSTOMER VALUES
-('254712345678', '{bcrypt}$2a$10$kE9W5p3r1jRZrYp9oHn8eO0Z3s4zJx8FZz6p0', 0, 'N','Albert','Andrew','Baraka','1234');
+('254712345678', '{bcrypt}$2a$10$kE9W5p3r1jRZrYp9oHn8eO0Z3s4zJx8FZz6p0', 0, 'N','Albert','Andrew','Baraka','1234','blue');
 -- PIN: 1234

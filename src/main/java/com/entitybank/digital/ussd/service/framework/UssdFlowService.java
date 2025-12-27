@@ -68,7 +68,10 @@ public class UssdFlowService {
         /* ===========================
          * ACTION MENU
          * =========================== */
-        if (menu.getActionBean() != null) {
+        /* ===========================
+         * ACTION MENU (ONLY ON INPUT)
+         * =========================== */
+        if (menu.getActionBean() != null && input != null) {
 
             MenuAction action = registry.get(menu.getActionBean());
             ActionResult result = action.execute(ctx, input);
@@ -76,6 +79,7 @@ public class UssdFlowService {
             session.setCurrentMenu(result.getNextMenu());
             return enrich(result, session);
         }
+
 
         /* ===========================
          * FIRST LOAD (NO INPUT)
@@ -97,13 +101,14 @@ public class UssdFlowService {
 
                     session.setCurrentMenu(next.getMenuCode());
 
-                    if (next.getActionBean() != null) {
+                    if (next.getActionBean() != null && input != null) {
                         MenuAction action = registry.get(next.getActionBean());
                         ActionResult result = action.execute(ctx, input);
 
                         session.setCurrentMenu(result.getNextMenu());
                         return enrich(result, session);
                     }
+
 
                     return new ActionResult(
                             resolver.resolve(next.getMenuText(), session.getMsisdn()),
@@ -128,13 +133,14 @@ public class UssdFlowService {
 
                     session.setCurrentMenu(next.getMenuCode());
 
-                    if (next.getActionBean() != null) {
+                    if (next.getActionBean() != null && input != null) {
                         MenuAction action = registry.get(next.getActionBean());
                         ActionResult result = action.execute(ctx, input);
 
                         session.setCurrentMenu(result.getNextMenu());
                         return enrich(result, session);
                     }
+
 
                     return new ActionResult(
                             resolver.resolve(next.getMenuText(), session.getMsisdn()),
