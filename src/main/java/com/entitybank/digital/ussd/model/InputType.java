@@ -1,10 +1,11 @@
 package com.entitybank.digital.ussd.model;
 
 public enum InputType {
+    NONE,
     OPTION,
     NUMBER,
-    TEXT,
     PIN,
-    CONFIRM,
-    NONE
+    TEXT,
+    CONFIRM
 }
+
